@@ -3,7 +3,6 @@ const mode = process.env.NODE_ENV !== 'production' ? 'development' : 'production
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const WatchLiveReloadPlugin = require('webpack-watch-livereload-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
 const config = {
@@ -11,7 +10,7 @@ const config = {
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: mode === 'development' ? 'ami.js' : 'ami.min.js',
+    fitlename: mode === 'development' ? 'ami.js' : 'ami.min.js',
     library: 'AMI',
     libraryTarget: 'umd',
     umdNamedDefine: true,
@@ -72,17 +71,6 @@ if (process.env.NODE_WEBPACK_TARGET) {
     .include.push(path.resolve(__dirname, process.env.NODE_WEBPACK_TARGET));
 
   const workPath = path.resolve(__dirname, process.env.NODE_WEBPACK_TARGET);
-  if (mode === 'development' && workPath.indexOf('/dist/') === -1) {
-    config.plugins.push(
-      new WatchLiveReloadPlugin({
-        files: [
-          path.resolve(__dirname, 'build') + '/*.js',
-          workPath + '/**/*.html',
-          workPath + '/**/*.css',
-        ],
-      })
-    );
-  }
 
   const dataPath = path.resolve(__dirname, 'data');
 
