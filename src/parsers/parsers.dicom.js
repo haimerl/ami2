@@ -2,16 +2,13 @@
 import UtilsCore from '../core/core.utils';
 import ParsersVolume from './parsers.volume';
 
-import * as OpenJPEG from 'OpenJPEG.js/dist/openJPEG-DynamicMemory-browser.js';
-
 import { RLEDecoder } from '../decoders/decoders.rle';
 
 let DicomParser = require('dicom-parser');
 let Jpeg = require('jpeg-lossless-decoder-js');
 let JpegBaseline = require('../../external/scripts/jpeg');
 let Jpx = require('../../external/scripts/jpx');
-let openJPEG; // for one time initialization
-
+let OpenJPEG = null;
 /**
  * Dicom parser is a combination of utilities to get a VJS image from dicom files.
  *scripts
@@ -887,94 +884,6 @@ export default class ParsersDicom extends ParsersVolume {
     return jpxImage.tiles[0].items;
   }
 
-  _decodeOpenJPEG(frameIndex = 0) {
-    const encodedPixelData = this.getEncapsulatedImageFrame(frameIndex);
-    const bytesPerPixel = this.bitsAllocated(frameIndex) <= 8 ? 1 : 2;
-    const signed = this.pixelRepresentation(frameIndex) === 1;
-    const dataPtr = openJPEG._malloc(encodedPixelData.length);
-
-    openJPEG.writeArrayToMemory(encodedPixelData, dataPtr);
-
-    // create param outpout
-    const imagePtrPtr = openJPEG._malloc(4);
-    const imageSizePtr = openJPEG._malloc(4);
-    const imageSizeXPtr = openJPEG._malloc(4);
-    const imageSizeYPtr = openJPEG._malloc(4);
-    const imageSizeCompPtr = openJPEG._malloc(4);
-    const ret = openJPEG.ccall(
-      'jp2_decode',
-      'number',
-      ['number', 'number', 'number', 'number', 'number', 'number', 'number'],
-      [
-        dataPtr,
-        encodedPixelData.length,
-        imagePtrPtr,
-        imageSizePtr,
-        imageSizeXPtr,
-        imageSizeYPtr,
-        imageSizeCompPtr,
-      ]
-    );
-    const imagePtr = openJPEG.getValue(imagePtrPtr, '*');
-
-    if (ret !== 0) {
-      console.log('[opj_decode] decoding failed!');
-      openJPEG._free(dataPtr);
-      openJPEG._free(imagePtr);
-      openJPEG._free(imageSizeXPtr);
-      openJPEG._free(imageSizeYPtr);
-      openJPEG._free(imageSizePtr);
-      openJPEG._free(imageSizeCompPtr);
-
-      return;
-    }
-
-    // Copy the data from the EMSCRIPTEN heap into the correct type array
-    const length =
-      openJPEG.getValue(imageSizeXPtr, 'i32') *
-      openJPEG.getValue(imageSizeYPtr, 'i32') *
-      openJPEG.getValue(imageSizeCompPtr, 'i32');
-    const src32 = new Int32Array(openJPEG.HEAP32.buffer, imagePtr, length);
-    let pixelData;
-
-    if (bytesPerPixel === 1) {
-      if (Uint8Array.from) {
-        pixelData = Uint8Array.from(src32);
-      } else {
-        pixelData = new Uint8Array(length);
-        for (let i = 0; i < length; i++) {
-          pixelData[i] = src32[i];
-        }
-      }
-    } else if (signed) {
-      if (Int16Array.from) {
-        pixelData = Int16Array.from(src32);
-      } else {
-        pixelData = new Int16Array(length);
-        for (let i = 0; i < length; i++) {
-          pixelData[i] = src32[i];
-        }
-      }
-    } else if (Uint16Array.from) {
-      pixelData = Uint16Array.from(src32);
-    } else {
-      pixelData = new Uint16Array(length);
-      for (let i = 0; i < length; i++) {
-        pixelData[i] = src32[i];
-      }
-    }
-
-    openJPEG._free(dataPtr);
-    openJPEG._free(imagePtrPtr);
-    openJPEG._free(imagePtr);
-    openJPEG._free(imageSizePtr);
-    openJPEG._free(imageSizeXPtr);
-    openJPEG._free(imageSizeYPtr);
-    openJPEG._free(imageSizeCompPtr);
-
-    return pixelData;
-  }
-
   // from cornerstone
   _decodeJ2K(frameIndex = 0) {
     if (typeof OpenJPEG === 'undefined') {
@@ -983,14 +892,13 @@ export default class ParsersDicom extends ParsersVolume {
     }
 
     if (!openJPEG) {
-      openJPEG = OpenJPEG();
+      openJPEG = null;
       if (!openJPEG || !openJPEG._jp2_decode) {
         // OpenJPEG failed to initialize
         return this._decodeJpx(frameIndex);
       }
     }
 
-    return this._decodeOpenJPEG(frameIndex);
   }
 
   _decodeRLE(frameIndex = 0) {
