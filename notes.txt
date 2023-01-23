@@ -73,7 +73,8 @@ Module not found: Error: Can't resolve 'ts-loader' in 'C:\ami2'
 resolve 'ts-loader' in 'C:\ami2'
 
 To Fix:
-yarn add ts-loader --dev
+yarn remove typescript
+yarn add ts-loader@~8.2.0
 
   
 Module build failed (from ./node_modules/ts-loader/index.js):
