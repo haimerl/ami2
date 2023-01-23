@@ -61,7 +61,8 @@
     "nifti-reader-js": "v0.5.3",
     "nrrd-js": "^0.2.1",
     "pako": "1.0.1",
-    "three": "latest"
+    "three": "latest",
+    "ts-loader": "~8.2.0"
   },
   "scripts": {
     "precommit": "lint-staged",
@@ -119,11 +120,10 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "shelljs": "^0.8.2",
     "sinon": "^2.0.0",
-    "ts-loader": "^9.4.2",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-loader": "^3.6.0",
-    "typescript": "^3.1.1",
+    "typescript": "3.6",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.16.3",
     "webpack-bundle-analyzer": "^2.9.0",
