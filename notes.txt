@@ -1,0 +1,84 @@
+Notes on build issues:
+First had problems with missing OpenJPEG during "yarn install", changed dicom loader to not use it then removed dependency
+
+Error: error:0308010C:digital envelope routines::unsupported
+
+To Fix:
+Linux and macOS (Windows Git Bash)-
+export NODE_OPTIONS=--openssl-legacy-provider
+Windows command prompt-
+set NODE_OPTIONS=--openssl-legacy-provider
+Windows PowerShell-
+$env:NODE_OPTIONS = "--openssl-legacy-provider"
+
+C:\ami2>set NODE_OPTIONS=--openssl-legacy-provider
+
+C:\ami2>yarn build:ami
+C:\ami2\node_modules\typescript\lib\typescript.js:117742
+            return program.getOptionsDiagnostics(cancellationToken).concat(program.getGlobalDiagnostics(cancellationToken));
+C:\ami2\node_modules\typescript\lib\typescript.js:117742
+            return program.getOptionsDiagnostics(cancellationToken).concat(program.getGlobalDiagnostics(cancellationToken));
+                           ^
+TypeError: Cannot read properties of undefined (reading 'getOptionsDiagnostics')
+    at Object.getCompilerOptionsDiagnostics (C:\AMI\node_modules\typescript\lib\typescript.js:117742:28)
+    at provideCompilerOptionDiagnosticErrorsToWebpack (C:\AMI\node_modules\ts-loader\dist\after-compile.js:39:31)
+    at C:\AMI\node_modules\ts-loader\dist\after-compile.js:17:9
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:16:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at C:\AMI\node_modules\webpack\lib\Compiler.js:549:30
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:6:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1323:35
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:6:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1314:32
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:6:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1309:36
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:6:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1305:32
+    at AsyncSeriesHook.eval [as callAsync] (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:6:1)
+    at AsyncSeriesHook.lazyCompileHook (C:\AMI\node_modules\tapable\lib\Hook.js:154:20)
+    at Compilation.seal (C:\AMI\node_modules\webpack\lib\Compilation.js:1242:27)
+    at C:\AMI\node_modules\webpack\lib\Compiler.js:546:17
+    at eval (eval at create (C:\AMI\node_modules\tapable\lib\HookCodeFactory.js:32:10), <anonymous>:11:1)
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1093:12
+    at C:\AMI\node_modules\webpack\lib\Compilation.js:1005:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+
+Node.js v18.9.0
+
+C:\ami2>yarn build:ami
+Hash: c4235f325b628442473d
+Version: webpack 4.27.1
+Time: 113ms
+Built at: 01/22/2023 1:49:03 PM
+     Asset      Size  Chunks             Chunk Names
+    ami.js  4.65 KiB    main  [emitted]  main
+ami.js.map     4 KiB    main  [emitted]  main
+Entrypoint main = ami.js ami.js.map
+[0] multi ./src/ami.ts 28 bytes {main} [built]
+[./src/ami.ts] 297 bytes {main} [built] [failed] [1 error]
+
+ERROR in ./src/ami.ts
+Module build failed (from ./node_modules/ts-loader/index.js):
+TypeError: loaderContext.getOptions is not a function
+    at getLoaderOptions (C:\ami2\node_modules\ts-loader\dist\index.js:91:41)
+    at Object.loader (C:\ami2\node_modules\ts-loader\dist\index.js:14:21)
+ @ multi ./src/ami.ts main[0]
+
+ERROR in multi ./src/ami.ts
+Module not found: Error: Can't resolve 'ts-loader' in 'C:\ami2'
+resolve 'ts-loader' in 'C:\ami2'
+
+To Fix:
+yarn add ts-loader --dev
+
+  
+Module build failed (from ./node_modules/ts-loader/index.js):
+ReferenceError: __spreadArrays is not defined
+
+To Fix:
+yarn remove typescript
+yarn add typescript@3.6
